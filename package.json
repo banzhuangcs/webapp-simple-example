@@ -1,0 +1,25 @@
+{
+  "name": "webapp_simple_example",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "node_modules/.bin/babel src -d build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/banzhuangcs/webapp-simple-example.git"
+  },
+  "keywords": [
+    "\\"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/banzhuangcs/webapp-simple-example/issues"
+  },
+  "homepage": "https://github.com/banzhuangcs/webapp-simple-example#readme",
+  "devDependencies": {
+    "babel-cli": "^6.18.0"
+  }
+}
