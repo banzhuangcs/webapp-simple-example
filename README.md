@@ -58,3 +58,6 @@
 
 http://ghmagical.com/app
 # 目录结构
+
+# 技术点  
+els(前端模块化环境) + babel(es6编译器) + gulp + eslint(代码检测) + 自动化测试
