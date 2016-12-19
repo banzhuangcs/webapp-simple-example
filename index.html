@@ -4,6 +4,31 @@
     <meta charset="utf-8" />
   </head>
   <body>
-    <script src="build/app.js"></script>
+    <!--
+      amd清晰的描述了模块之间的依赖，避免每次增加一个文件，就在页面之间增加一个script标签
+      强制异步加载模块，并且在开发中确定模块的依赖
+      对比commonjs不需要开发环境中的依赖工具
+      打包构建就是为了模块的合并
+
+      模块的声明依赖：
+        通过在dependencies中声明具体依赖，全部加载完成后，会按照顺序当做参数调用factory
+        通过在factory中，传入require、exports、module
+
+        模块显示的在devDependencies中定义或者再factory被require，称作装载时依赖
+        模块在代码执行中被require，比如方法调用中，那叫运行时依赖
+        等所有模块在装载依赖都初始化后，
+        如果在在devDependencies中，并且也在factory，那么一定是装载时依赖，如果factory不存在那么可能是运行时依赖
+        使用require分为全局require和局部require
+        全局require(异步require): id必须是绝对路径
+        局部require: id可以是相对路径
+
+        loader提供配置方法，loader根据配置去得到id的url
+        require.config();
+    -->
+
+    <script src="build/lib/vendor/esl.js"></script>
+    <script>
+
+    </script>
   </body>
 </html>

@@ -4,7 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "node_modules/.bin/babel src -d build"
+    "compile": "node_modules/.bin/babel src -d build",
+    "test": "",
+    "lint": "",
+    "build:pro": "npm run compile"
   },
   "repository": {
     "type": "git",
@@ -20,6 +23,8 @@
   },
   "homepage": "https://github.com/banzhuangcs/webapp-simple-example#readme",
   "devDependencies": {
-    "babel-cli": "^6.18.0"
+    "babel-cli": "^6.18.0",
+    "babel-preset-es2015": "^6.18.0",
+    "eslint": "^3.12.2"
   }
 }
