@@ -5,30 +5,63 @@
   </head>
   <body>
     <!--
-      amd清晰的描述了模块之间的依赖，避免每次增加一个文件，就在页面之间增加一个script标签
-      强制异步加载模块，并且在开发中确定模块的依赖
-      对比commonjs不需要开发环境中的依赖工具
-      打包构建就是为了模块的合并
+      引用require.js data-main的目录就是baseUrl(应用根目录)
+      baseUrl是引用require.js的html的目录
+      增加baseUrl或data-main都是将路径和页面路径join
 
-      模块的声明依赖：
-        通过在dependencies中声明具体依赖，全部加载完成后，会按照顺序当做参数调用factory
-        通过在factory中，传入require、exports、module
+      模块化:
+        提供了代码独立的作用域，描述了模块间的依赖关系，无需像cmd需要通过编译工具转换
+        一般定义模块使用匿名模块，具名模块是通过构建工具完成的，如果在开发中，显示的定义了模块名
+        假如文件放到其他目录，那么就需要改动代码，
+        构建工具将多个模块打包合并到一文件
 
-        模块显示的在devDependencies中定义或者再factory被require，称作装载时依赖
-        模块在代码执行中被require，比如方法调用中，那叫运行时依赖
-        等所有模块在装载依赖都初始化后，
-        如果在在devDependencies中，并且也在factory，那么一定是装载时依赖，如果factory不存在那么可能是运行时依赖
-        使用require分为全局require和局部require
-        全局require(异步require): id必须是绝对路径
-        局部require: id可以是相对路径
+        require 机制（内部原理）
+          每一个依赖通过script去加载，加载过程是无序的，每个加载完成，计算每个依赖模块的顺序，依次传入callback
+        配置项：
+          baseUrl: 业务模块的根目录；
+            初始路径是引用require.js的页面路径
+            通过data-main和require.config
+          paths: 非业务模块（第三方模块）的路径，如果/、http开头的就不基于baseUrl
+          shim: 将模块没有声明依赖关系、模块导出的全局变量转换成require模块
+          data-main 入口文件
+          初始化是src的目录
 
-        loader提供配置方法，loader根据配置去得到id的url
-        require.config();
+          /ww/bb/adc.js
+          ./md.js
+
+          require([], function () {})
+          define([], function () {})
+
+          1、得到baseUrl
+          2、解析require
+            params：deps和callback
+            如何管理模块之间的依赖
+                1、得到deps的每个依赖项的文件路径，描述当前模块的模块信息对象 id, state, deps, callback, exports
+                2、开始加载依赖项
+                3、动态创建script标签，监听onload、onerror
+                4、当前模块加载完成，但是不确定子模块是否加载完成，
+                ['a']
+                  0
+                  b.color
+
+                  ['b']
+                    ['a']
+                loading[id] = a;
+                是否存在依赖，存在依赖就开始加载
+                
+                检查依赖是否完成，完成后就调用callback
+
+                loading[]
+                loadDev();
+                checkDeps();
+
+                loading[]
+                loadDevs()
+                checkDeps
+
     -->
-
-    <script src="build/lib/vendor/esl.js"></script>
-    <script>
-
-    </script>
+    <script src="./src/vendor/require.js"></script>
+    <script src="./requireConfig.js"></script>
+    <script src="./src/app.js"></script>
   </body>
 </html>
