@@ -25,6 +25,8 @@
 ;((root) => {
   // 定义模块集合描述对象
   const modules = {};
+  // 模块加载完成，但可能存在依赖模块没有加载
+  const loadingModules = {};
   // 定义模块引用的根路径
   let baseUrl = '';
   // 默认后缀是.js
@@ -33,8 +35,12 @@
   const matchIdExp = /([^/]+)\.js$/;
   const matchPathPosExp = /^([.]+)/;
 
-  let define, require, config, initialize, resolveFilePath;
-  let getCurrentFilePath, getFilePathById, getIdByFilePath;
+  let define, require, config, initialize;
+  let resolveFilePath getCurrentFilePath, getFilePathById, getIdByFilePath;
+  let loadResource, loadDepModules, checkDepIsLoaded, fireFactory;
+
+  // head dom
+  const __HEADNODE__ = document.getElementsByTagName('head')[0];
 
   /**
    定义模块
@@ -79,21 +85,22 @@
 
     // 获取使用require加载模块的script文件路径
     const id = getFilePathById(getIdByFilePath(getCurrentFilePath()));
+    let module = modules[id];
 
-    if (!modules[id]) {
+    if (!module) {
       deps = deps.map(dep => getFilePathById(dep));
-      modules[id] = {
+      module = modules[id] = {
         id,
         state: 0,
         deps,
         factory,
         exports: null
       };
+
+      loadingModules.unshift(module);
     }
 
-
-
-
+    loadDepModules(module.id);
   };
 
   config = () => {};
@@ -117,10 +124,64 @@
     matchIdExp.test(filePath) && RegExp.$1;
 
   /**
+   加载依赖模块
+  **/
+  loadDepModules = (filePath) => {
+    if (let module = modules[filePath]) {
+      const depModules = module.deps;
+      node = depModules.forEach(module => {
+        loadResource(module.id, () => {
+          // 删除加载的script dom
+          __HEADNODE__.removeChild(node);
+          // 添加到未加载完集合中
+          loadingModules.unshift(module);
+          // 继续加载依赖
+          loadDepModules(module.id);
+          // 检查依赖是否全部加载完成
+          checkDepIsLoaded();
+        });
+      });
+    }
+  };
+
+  /**
    加载模块文件
   **/
   loadResource = (filePath, callback) => {
+    const script = document.createElement('script');
+    script.src = filePath;
+    script.async = true;
+    script.onload = () => callback();
+    script.onerror = () => throw new Error('加载模块失败');
 
+    return script;
+  };
+
+  /**
+   检查依赖模块是否加载完成
+  **/
+  checkDepIsLoaded = () => {
+    for (let i = loadingModules.length - 1; i >= 0; i--) {
+      const module = loadingModules[i];
+      const depModules = module.deps;
+      const isAllLoaded = !depModules.length
+        || depModules.every(depModule => !!depModule && depModule.state === 2);
+
+      if (!isAllLoaded) {
+        break;
+      }
+
+      fireFactory(module);
+    }
+  };
+
+  /**
+    当模块及依赖模块全部加载完成调用模块的factory内部逻辑
+  **/
+  fireFactory = (module) => {
+    const params = module.deps.map(dep => dep.exports);
+    module.exports = module.factory.apply(this, params) || null;
+    module.state = 2;
   };
 
   /**
@@ -144,6 +205,16 @@
     }
 
     return finalFilePath;
+  };
+
+  initialize = () => {
+    baseUrl = getCurrentFilePath().replace(matchIdExp, '');
+
+    if (let mainPath = document.currentScript.getAttribute('data-main')) {
+      baseUrl = resolveFilePath(mainPath);
+    }
+
+    loadResource(baseUrl);
   };
 
   require.config = config;
