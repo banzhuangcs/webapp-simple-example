@@ -10,3 +10,10 @@
     for() {
     xx.push(this[i])
 **/
+;((root, factory) => {
+  if (typeof define === 'function' && define.amd) {
+      
+  }
+})(window, () => {
+
+});

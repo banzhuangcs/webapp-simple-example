@@ -33,10 +33,11 @@
   const suffix = '.js';
   // 匹配module id正则表达式
   const matchIdExp = /([^/]+)\.js$/;
-  const matchPathPosExp = /^([.]+)/;
+  const matchPathPosExp = /\.+\//g;
+  const protocolExp = /(http:\/{2}|file:\/{3})/;
 
   let define, require, config, initialize;
-  let resolveFilePath getCurrentFilePath, getFilePathById, getIdByFilePath;
+  let resolveFilePath, getCurrentFilePath, getFilePathById, getIdByFilePath;
   let loadResource, loadDepModules, checkDepIsLoaded, fireFactory;
 
   // head dom
@@ -75,13 +76,11 @@
   };
 
   require = (deps, factory) => {
-    if (!Array.isArray(deps) || !deps.length) {
+    if (!Array.isArray(deps) || !deps.length)
       throw new Error('缺少加载模块');
-    }
 
-    if (typeof factory !== 'function') {
+    if (typeof factory !== 'function')
       throw new Error('缺少加载完成依赖模块回调');
-    }
 
     // 获取使用require加载模块的script文件路径
     const id = getFilePathById(getIdByFilePath(getCurrentFilePath()));
@@ -97,7 +96,7 @@
         exports: null
       };
 
-      loadingModules.unshift(module);
+      loadingModules.push(module);
     }
 
     loadDepModules(module.id);
@@ -127,14 +126,16 @@
    加载依赖模块
   **/
   loadDepModules = (filePath) => {
-    if (let module = modules[filePath]) {
+    let module = null;
+
+    if (module = modules[filePath]) {
       const depModules = module.deps;
       node = depModules.forEach(module => {
         loadResource(module.id, () => {
           // 删除加载的script dom
           __HEADNODE__.removeChild(node);
           // 添加到未加载完集合中
-          loadingModules.unshift(module);
+          loadingModules.push(module);
           // 继续加载依赖
           loadDepModules(module.id);
           // 检查依赖是否全部加载完成
@@ -151,9 +152,10 @@
     const script = document.createElement('script');
     script.src = filePath;
     script.async = true;
-    script.onload = () => callback();
-    script.onerror = () => throw new Error('加载模块失败');
-
+    script.onload = () => callback && callback()
+    script.onerror = () => { throw new Error('加载模块失败') };
+    __HEADNODE__.appendChild(script);
+    
     return script;
   };
 
@@ -167,9 +169,8 @@
       const isAllLoaded = !depModules.length
         || depModules.every(depModule => !!depModule && depModule.state === 2);
 
-      if (!isAllLoaded) {
+      if (!isAllLoaded)
         break;
-      }
 
       fireFactory(module);
     }
@@ -180,28 +181,31 @@
   **/
   fireFactory = (module) => {
     const params = module.deps.map(dep => dep.exports);
-    module.exports = module.factory.apply(this, params) || null;
     module.state = 2;
+    module.exports = module.factory.apply(this, params) || null;
   };
 
   /**
    解析模块文件路径
   **/
   resolveFilePath = (filePath) => {
-    const baseUrlPaths = baseUrl.split(/[\\/]/);
-    const pos = matchPathPosExp.test(filePath) && RegExp.$1;
+    const protocol = protocolExp.test(baseUrl) && RegExp.$1;
+    const baseUrlPaths = baseUrl.slice(protocol.length).split(/\//);
+    const filePaths = filePath.split(/\//);
+    const posList = filePath.match(matchPathPosExp);
     let finalFilePath;
 
-    if (pos) {
-      const posLength = pos.length;
+    if (baseUrlPaths[baseUrlPaths.length - 1] === '')
+      baseUrlPaths.pop();
 
-      if (posLength > 1) {
-        baseUrlPaths.pop();
-      }
+    if (posList) {
+      posList.forEach(pos =>
+        pos.indexOf('..') >= 0 && baseUrlPaths.pop()
+      );
 
-      finalFilePath = [...baseUrlPaths, ...filePath.slice(posLength + 1)].join('/');
+      finalFilePath = `${protocol}${[...baseUrlPaths,  ...filePaths.slice(posList.length)].join('/')}`;
     } else {
-      finalFilePath = [...baseUrlPaths, filePath];
+      finalFilePath = `${protocol}${[...baseUrlPaths, filePath]}`;
     }
 
     return finalFilePath;
@@ -209,15 +213,15 @@
 
   initialize = () => {
     baseUrl = getCurrentFilePath().replace(matchIdExp, '');
+    let mainPath = document.currentScript.getAttribute('data-main');
 
-    if (let mainPath = document.currentScript.getAttribute('data-main')) {
-      baseUrl = resolveFilePath(mainPath);
-    }
-
-    loadResource(baseUrl);
+    if (mainPath)
+      loadResource(resolveFilePath(mainPath));
   };
 
+  initialize();
   require.config = config;
+  define.amd = true;
   root.require = require;
   root.define = define;
 })(window);
