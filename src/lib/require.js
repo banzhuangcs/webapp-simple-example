@@ -26,7 +26,7 @@
   // 定义模块集合描述对象
   const modules = {};
   // 模块加载完成，但可能存在依赖模块没有加载
-  const loadingModules = {};
+  const loadingModules = [];
   // 定义模块引用的根路径
   let baseUrl = '';
   // 默认后缀是.js
@@ -60,7 +60,7 @@
       id = false;
     }
 
-    id = id ? getFilePathById(id) : getFilePathById(getIdByFilePath(getCurrentFilePath()));
+    id = id ? getFilePathById(id) : getCurrentFilePath();
     deps = deps.map(dep => getFilePathById(dep));
 
     if (!modules[id]) {
@@ -83,7 +83,7 @@
       throw new Error('缺少加载完成依赖模块回调');
 
     // 获取使用require加载模块的script文件路径
-    const id = getFilePathById(getIdByFilePath(getCurrentFilePath()));
+    const id = getCurrentFilePath();
     let module = modules[id];
 
     if (!module) {
@@ -95,7 +95,6 @@
         factory,
         exports: null
       };
-
       loadingModules.push(module);
     }
 
@@ -130,14 +129,15 @@
 
     if (module = modules[filePath]) {
       const depModules = module.deps;
-      node = depModules.forEach(module => {
-        loadResource(module.id, () => {
+
+      depModules.forEach(moduleId => {
+        const node = loadResource(moduleId, () => {
           // 删除加载的script dom
           __HEADNODE__.removeChild(node);
           // 添加到未加载完集合中
-          loadingModules.push(module);
+          loadingModules.push(modules[moduleId]);
           // 继续加载依赖
-          loadDepModules(module.id);
+          loadDepModules(moduleId);
           // 检查依赖是否全部加载完成
           checkDepIsLoaded();
         });
@@ -155,7 +155,7 @@
     script.onload = () => callback && callback()
     script.onerror = () => { throw new Error('加载模块失败') };
     __HEADNODE__.appendChild(script);
-    
+
     return script;
   };
 
@@ -165,9 +165,10 @@
   checkDepIsLoaded = () => {
     for (let i = loadingModules.length - 1; i >= 0; i--) {
       const module = loadingModules[i];
+
       const depModules = module.deps;
       const isAllLoaded = !depModules.length
-        || depModules.every(depModule => !!depModule && depModule.state === 2);
+        || depModules.every(depModule => !!modules[depModule] && modules[depModule].state === 2);
 
       if (!isAllLoaded)
         break;
@@ -180,7 +181,7 @@
     当模块及依赖模块全部加载完成调用模块的factory内部逻辑
   **/
   fireFactory = (module) => {
-    const params = module.deps.map(dep => dep.exports);
+    const params = module.deps.map(dep => modules[dep].exports);
     module.state = 2;
     module.exports = module.factory.apply(this, params) || null;
   };

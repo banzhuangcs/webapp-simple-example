@@ -60,8 +60,19 @@
                 checkDeps
                 document.write
                 document.appendChild
+      事件 行为 状态
+      action reducer state
+      普通值、函数、undefined都存储在内存的stack
+
+      当在js中执行异步任务时候，js引擎向浏览器其他线程请求执行异步任务，当执行完成后，会推入到js引擎的任务队列中，当js引擎空闲时候
+      会到任务队列中遍历，从第一个任务执行，执行完毕后继续检查队列，直到为空
+
+      特定时间只能处
+      开发环境
+      编程规范
 
     -->
-  <script src="./build/lib/require.js" data-main="../../a.js"></script>
+
+  <script src="src/lib/require.js" data-main="../app.js"></script>
   </body>
 </html>
