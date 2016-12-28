@@ -107,7 +107,9 @@
    获取引用require.js的文件路径
   **/
   getCurrentFilePath = () =>
-    document.currentScript.src;
+    document.currentScript
+      ? document.currentScript.src
+      : Array.from(document.getElementsByTagName('script')).pop().src;
 
   /**
    根据module id获取文件路径
