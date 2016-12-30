@@ -1,5 +1,14 @@
 'use strict';
 
-require(['../../a', '../../b', '../../c'], function (a, b, c) {
-  console.log('' + a + b + c);
+require.config({
+  baseUrl: '../',
+  alias: {
+    a: '../a',
+    b: '../b',
+    c: '../c'
+  }
+});
+
+require(['a', 'b', 'c'], function (a, b, c) {
+  return a + ':' + b + ':' + c;
 });

@@ -27,6 +27,8 @@
   const modules = {};
   // 模块加载完成，但可能存在依赖模块没有加载
   const loadingModules = [];
+  // 模块别名映射
+  let alias = {};
   // 定义模块引用的根路径
   let baseUrl = '';
   // 默认后缀是.js
@@ -61,7 +63,7 @@
     }
 
     id = id ? getFilePathById(id) : getCurrentFilePath();
-    deps = deps.map(dep => getFilePathById(dep));
+    deps = deps.map(dep => alias[dep] || getFilePathById(dep));
 
     if (!modules[id]) {
       // 每次定义模块，记录模块的加载状态、依赖项、内部逻辑、返回值
@@ -87,7 +89,7 @@
     let module = modules[id];
 
     if (!module) {
-      deps = deps.map(dep => getFilePathById(dep));
+      deps = deps.map(dep => alias[dep] || getFilePathById(dep));
       module = modules[id] = {
         id,
         state: 0,
@@ -101,7 +103,15 @@
     loadDepModules(module.id);
   };
 
-  config = () => {};
+  config = (options) => {
+    if (options.baseUrl)
+      baseUrl = resolveFilePath(options.baseUrl);
+
+    if (options.alias)
+      Object
+        .keys(options.alias)
+        .forEach(key => alias[key] = getFilePathById(options.alias[key]));
+  };
 
   /**
    获取引用require.js的文件路径

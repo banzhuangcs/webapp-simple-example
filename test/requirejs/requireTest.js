@@ -26,6 +26,10 @@
   断言、测试覆盖率
   当测试不通过时，报出assertException,中断测试用例的执行
 
+  内存分配：系统在栈或堆内存中声明空间，存储变量值；
+  内存使用：函数中使用变量、等到执行完毕；
+  内存回收：函数执行完成，局部变量全部；
+
 */
 mocha.setup('bdd');
 
@@ -47,10 +51,10 @@ describe('require.js单元测试', function () {
     it('定义匿名依赖模块', function (done) {
       require(['../../test/requirejs/TestDefineDeps'], function (testDefineDeps) {
         //assert.typeOf(testDefineDeps, 'objec');
+        // chai.assert.equal strictEqual deepEqual
         assert.lengthOf(Object.keys(testDefineDeps), 1);
         done();
       });
-
     });
   });
 });

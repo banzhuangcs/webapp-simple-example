@@ -10,10 +10,41 @@
     for() {
     xx.push(this[i])
 **/
-;((root, factory) => {
-  if (typeof define === 'function' && define.amd) {
-      
-  }
-})(window, () => {
+define(() => {
+  const breakline = '\r\n';
+  const templateContentExp = /<%([\s\S]*?)%>/g;
+  const operatorExp = /for|if|else|elseif|switch|[?}]/;
+  const sepecialExp = /(['"])/g;
 
+  function resolveCode(templatePart, isTemplateContent) {
+    if (!isTemplateContent) {
+      // 如果不是模板内容，例html标签
+      // 将'或"转义
+      return `res.push('${templatePart.replace(sepecialExp, '\\$1')}');${breakline}`;
+    } else {
+      // 如果模板内容是语法逻辑
+      if (operatorExp.test(templatePart)) {
+        return `${templatePart}${breakline}`;
+      } else {
+        return `res.push(${templatePart})${breakline}`;
+      }
+    }
+  }
+
+  return (template, data) => {
+    let execCode = `var res=[];${breakline}`;
+    let match = null;
+    let index = 0;
+
+    while (match = templateContentExp.exec(template)) {
+      execCode += resolveCode(template.slice(index, match.index));
+      execCode += resolveCode(match[1], true);
+      index = templateContentExp.lastIndex;
+    }
+
+    execCode += resolveCode(template.substr(index, template.length - index));
+    execCode += `return res.join('');`
+
+    return new Function(execCode).call(data);
+  };
 });
