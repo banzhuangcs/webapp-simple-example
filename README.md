@@ -60,4 +60,9 @@ http://ghmagical.com/app
 # 目录结构
 
 # 技术点  
-els(前端模块化环境) + babel(es6编译器) + gulp + eslint(代码检测) + 自动化测试
+els(前端模块化环境) + babel(es6编译器) + gulp + eslint(代码检测) + 自动化测试  
+
+核心底层（模块加载器、模板引擎、DOM库、Promise、Ajax、Router、ViewportAdapter）
+基础扩展（日期处理、工具库）
+ui组件（按钮、面板、对话框、Tab、lightbox）
+实时动画系统
