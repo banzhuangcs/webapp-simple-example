@@ -6,21 +6,22 @@
     </style>
   </head>
   <body>
-    <div id="cn" data-mdX="sdf" style="width:10px;height:20px;background:green"></div>
-    <input id="nan" type="checkbox" checked />男
-    <input id="nv" type="checkbox" />女
-    <input id="zhao" type="radio" />赵
-    <input id="qian" type="radio" checked />钱
-    <input id="sun" type="radio" />孙
-    <select id="mz">
-      <option>王</option>
-      <option checked>二</option>
-      <option>麻</option>
-      <option>子</option>
-    </select>
+    <div style="position: static">
+      <div>
+        <div>
+          <div>
+            <div>
+              <div>
+                <span id="cn">12321</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
     <script>
-      var cn = document.querySelector('#cn');
-      cn.classList.add(function () {});
+      const cn = document.querySelector('#cn');
+      console.log(cn.offsetParent);
       // '' "" function object
 
       // attributes 是一个以数字为属性的DOM属性对象，每一个对象都是原型对象指向Attr函数的

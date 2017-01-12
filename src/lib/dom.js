@@ -137,6 +137,19 @@ define(() => {
     }
   };
 
+  Dom.prototype._size = function (attr, fn) {
+    return function (value) {
+      let element = this.get(0);
+
+      if (value == null) {
+        return element.getBoundingClientRect()[attr];
+      } else {
+        numberExp.test(value) && (value = `${value}px`);
+        fn.call(element, value);
+      }
+    };
+  };
+
   Object.assign(Dom.prototype, {
     each(callback) {
       this.constructor.each(Array.from(this), callback);
@@ -261,17 +274,45 @@ define(() => {
         .some(element => element.classList.contains(className));
     },
 
+    offset() {
+      const element = this.get(0);
+      const clientRect = element.getBoundingClientRect();
+
+      return {
+        left: clientRect.left + window.pageXOffset,
+        top: clientRect.top + window.pageYOffset
+      };
+    },
+
     position() {
+      let element = this.get(0);
+      let currOffset = this.offset();
+      let parent = element.parentNode;
+      let parentOffset;
 
+      while (parent.offsetParent != null) {
+        if (window.getComputedStyle(parent, null).getPropertyValue('position') === 'static')
+          parent = parent.parentNode;
+        else
+          break;
+      }
+
+      parentOffset = (parent = parent.getBoundingClientRect())
+        && { left: parent.left, top: parent.top };
+
+      return {
+        left: currOffset.left - parentOffset.left,
+        top: currOffset.top - parentOffset.top
+      };
     },
 
-    width() {
+    width: Dom.prototype._size('width', function (width) {
+      this.style.width = width;
+    }),
 
-    },
-
-    height() {
-
-    }
+    height: Dom.prototype._size('height', function (height) {
+      this.style.height = height;
+    })
   });
 
   return Selector;
