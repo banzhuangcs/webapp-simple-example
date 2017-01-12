@@ -2,3 +2,5 @@ node_modules/
 .git
 build/
 **.log
+**.js
+GC.html
