@@ -3,7 +3,7 @@
  * 常用DOM操作包括：
  1)、选择器
  2)、当前节点：attr、prop、addClass、removeClass、toggleClass、css、html、text、val、width、height、position、index
- 3)、关联兄弟节点：prev、next、substrings
+ 3)、关联兄弟节点：prev、next、siblings
  4)、关联父节点：parent
  5)、关联子节点：children、firstChild、lastChild
  6)、多个节点：filter
@@ -165,6 +165,19 @@ define(() => {
           : '';
 
       return this.each(element => element[attr] = value);
+    };
+  };
+
+  Dom.prototype._adjacent = function (attr) {
+    return function (selector) {
+      const siblings = this.get(0) && Array.from(this).map(element => attr ? element[attr] : );
+
+      if (siblings == null)
+        return this;
+
+      return this.constructor(
+        siblings.filter(element => !selector || element.matches(selector))
+      );
     };
   };
 
@@ -365,6 +378,29 @@ define(() => {
         ? Array.from(this.constructor(this).find('option').filter(ele => ele.selected)).map(ele => ele.value)
         : element.value;
     }),
+
+    /**
+      得到兄弟元素或元素集合
+    **/
+    prev: Dom.prototype._adjacent('previousElementSibling'),
+
+    next: Dom.prototype._adjacent('nextElementSibling'),
+
+    siblings(selector) {
+      const element = this.get(0);
+
+      if (element == null)
+        return this;
+
+      return this.constructor(
+        Array
+          .from(element.parentNode.children)
+          .filter(
+            ele => element !== ele
+              && (selector ? ele.matches(selector) : true)
+          );
+      );
+    }
   });
 
   return Selector;
