@@ -2,12 +2,14 @@
  * DOM操作
  * 常用DOM操作包括：
  1)、选择器
- 2)、当前节点：attr、prop、addClass、removeClass、toggleClass、css、html、text、width、height、position、index
+ 2)、当前节点：attr、prop、addClass、removeClass、toggleClass、css、html、text、val、width、height、position、index
  3)、关联兄弟节点：prev、next、substrings
  4)、关联父节点：parent
  5)、关联子节点：children、firstChild、lastChild
  6)、多个节点：filter
  7)、单个节点：first、last
+ 8)、插入子节点 append appendTo prepend prependTo
+ 9)、
 */
 
 define(() => {
@@ -117,6 +119,9 @@ define(() => {
     } else if (Array.isArray(selector)) {
       elements = selector;
       selector = void 0;
+    } else if (selector instanceof Dom) {
+      elements = selector;
+      selector = selector.selector;
     }
 
     Array
@@ -150,6 +155,19 @@ define(() => {
     };
   };
 
+  Dom.prototype._content = function (attr, fn) {
+    return function (value) {
+      let element;
+
+      if (value == null)
+        return (element = this.get(0))
+          ? fn.call(this, element)
+          : '';
+
+      return this.each(element => element[attr] = value);
+    };
+  };
+
   Object.assign(Dom.prototype, {
     each(callback) {
       this.constructor.each(Array.from(this), callback);
@@ -157,12 +175,24 @@ define(() => {
     },
 
     get: Dom.prototype._filterIndex(function (index) {
-      return this[index];
+      return this[index] || null;
     }),
 
     eq: Dom.prototype._filterIndex(function (index) {
       return this.constructor(this.get(index));
     }),
+
+    index() {
+      const element = this.get(0);
+
+      if (element == null)
+        return this;
+
+      if (element.offsetParent == null)
+        return 0;
+
+      return Array.from(element.parentNode.children).findIndex(ele => ele === element);
+    },
 
     attr(key, value) {
       let res, attrs;
@@ -312,7 +342,29 @@ define(() => {
 
     height: Dom.prototype._size('height', function (height) {
       this.style.height = height;
-    })
+    }),
+
+    empty() {
+      return this.each(element => element.innerHTML = '');
+    },
+
+    remove() {
+      return this.each(element => element.parentNode.removeChild(element));
+    },
+
+    html: Dom.prototype._content('innerHTML', function (element) {
+      return element.innerHTML;
+    }),
+
+    text: Dom.prototype._content('textContent', function (element) {
+      return element.textContent;
+    }),
+
+    val: Dom.prototype._content('value', function (element) {
+      return element.multiple
+        ? Array.from(this.constructor(this).find('option').filter(ele => ele.selected)).map(ele => ele.value)
+        : element.value;
+    }),
   });
 
   return Selector;

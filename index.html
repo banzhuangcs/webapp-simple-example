@@ -6,24 +6,19 @@
     </style>
   </head>
   <body>
-    <div style="position: static">
-      <div>
-        <div>
-          <div>
-            <div>
-              <div>
-                <span id="cn">12321</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <!--script src="http://apps.bdimg.com/libs/zepto/1.1.4/zepto.min.js"></script-->
+    <script src="c.js"></script>
+    <select id="ccn" multiple>
+      <option value="1">1</option>
+      <option value="2" selected>2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+    </select>
     <script>
-      const cn = document.querySelector('#cn');
-      console.log(cn.offsetParent);
+      // select的value是获取option selected的value
+      console.log($('#ccn').remove().length);
       // '' "" function object
-
+      // 获取select的value不能直接通过元素.value，而是找到option是否选中selected
       // attributes 是一个以数字为属性的DOM属性对象，每一个对象都是原型对象指向Attr函数的
       // console.log(cn.style.cssText);
     </script>
