@@ -100,11 +100,11 @@ define(() => {
     if (typeof selector === 'string') {
       // 如果是html标签，那么代表的就是准备根据标签创建dom
       if (selector.charAt(0) === '<') {
-        elements = $.getElementByFragment(html);
+        elements = $.getElementsByFragment(html);
       } else {
         // 如果是单个选择器
         if (!selector.match(/,|\s/)) {
-          elements = $.getElementBySelector(selector, context);
+          elements = $.getElementsBySelector(selector, context);
         }
 
         elements = context.querySelectorAll(selector);
@@ -380,7 +380,7 @@ define(() => {
     }),
 
     /**
-      得到兄弟元素或元素集合
+      得到前后兄弟元素或兄弟元素集合
     **/
     prev: Dom.prototype._adjacent('previousElementSibling'),
 
@@ -399,6 +399,61 @@ define(() => {
             ele => element !== ele
               && (selector ? ele.matches(selector) : true)
           );
+      );
+    },
+
+    /**
+     得到父级元素或祖先元素
+    **/
+    parent() {
+      const res = new Set();
+      $.each(Array.from(this), element => res.add(element.parentNode));
+
+      return this.constructor(Array.from(res));
+    },
+
+    parents(selector) {
+      let element = this.get(0);
+      let res = new Set(), parent;
+
+      if (element == null)
+        return this;
+
+      while (parent = element.parentNode)
+        !res.has(parent)
+          && (selector ? parent.matches(selector) : true)
+          && res.add(parent);
+
+      return this.constructor(Array.from(res));
+    },
+
+    /**
+      得到儿子元素或后代元素
+    **/
+    children(selector) {
+      const res = [];
+      $.each(
+        Array.from(this),
+        element => res.push(Array.from(element.children))
+      );
+
+      return this.constructor(
+        [].concat.apply([], res)
+          .filter((element, index, elements) =>
+              element.matches(selector) && (!index || elements.indexOf(element) === index))
+      );
+    },
+
+    find(selector) {
+      if (typeof selector !== 'string')
+        throw new TypeError('find方法selector参数必须是字符串');
+
+      return this.constructor(
+        Array.from(this).map(
+          element =>
+            $.getElementsBySelector(selector, element)
+              .filter((element, index, elements) => !index || elements.indexOf(element) === index)
+        );
       );
     }
   });

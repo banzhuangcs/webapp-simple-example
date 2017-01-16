@@ -11,7 +11,7 @@
     <script src="c.js"></script>
 
     <em>1</em>
-    <span class="g">g</span>
+    <span id="x" class="g">g</span>
     <em>2</em>
     <span class="g">g</span>
     <em>3</em>
@@ -21,7 +21,12 @@
     <script>
       // select的value是获取option selected的value
       //var san = document.getElementById('san');
-      console.log($('#san').siblings());
+      const set = new Set();
+      set.add([1, 2, 3]);
+      set.add([1, 2, 3]);
+      console.log(set);
+      // s
+      //
       // '' "" function object
       // 获取select的value不能直接通过元素.value，而是找到option是否选中selected
       // attributes 是一个以数字为属性的DOM属性对象，每一个对象都是原型对象指向Attr函数的
